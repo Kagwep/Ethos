@@ -1,0 +1,252 @@
+[
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "dataId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum DataCreator.DataType",
+          "name": "dataType",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalRewardPool",
+          "type": "uint256"
+        }
+      ],
+      "name": "DataCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "dataId",
+          "type": "uint256"
+        }
+      ],
+      "name": "DataDeactivated",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_contentUrl",
+          "type": "string"
+        },
+        {
+          "internalType": "enum DataCreator.DataType",
+          "name": "_dataType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_requiredResponses",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_rewardPerResponse",
+          "type": "uint256"
+        }
+      ],
+      "name": "createData",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "dataCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "dataItems",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "contentUrl",
+          "type": "string"
+        },
+        {
+          "internalType": "enum DataCreator.DataType",
+          "name": "dataType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "requiredResponses",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentResponses",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "rewardPerResponse",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalRewardPool",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dataId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deactivateData",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dataId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "contentUrl",
+              "type": "string"
+            },
+            {
+              "internalType": "enum DataCreator.DataType",
+              "name": "dataType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isActive",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "requiredResponses",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "currentResponses",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerResponse",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalRewardPool",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DataCreator.DataItem",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ]
