@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormStructure } from '../config/type';
+import { FormStructure } from '../config/types';
 
 interface ContractSubmissionModalProps {
   showModal: boolean;

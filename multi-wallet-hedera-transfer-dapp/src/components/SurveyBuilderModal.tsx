@@ -1,4 +1,4 @@
-import { FormStructure } from "../config/type";
+import { FormStructure } from "../config/types";
 import SurveyBuilder from "./SurveyBuilder";
 
 interface ModalProps {

@@ -1,5 +1,6 @@
-import DATAMANAGEMENTABI from "../abi/DataAccessManagement.json"
-import SurveyAbi from "../abi/SurveyManager.json"
+import DATAMANAGEMENTABI from "../abi/DataAccessManagement.json";
+import SurveyAbi from "../abi/SurveyManager.json";
+import FeedBackABI from "../abi/FeedbackManager.json";
 
 export const METAMASK_GAS_LIMIT_ASSOCIATE=800_000;
 export const METAMASK_GAS_LIMIT_TRANSFER_FT=50_000;
@@ -7,6 +8,9 @@ export const METAMASK_GAS_LIMIT_TRANSFER_NFT=100_000;
 export const DATAMANAGEMENTCONTRACT = "0xc02D72Aef09cf406940556Fdf458Be586f634451";
 export const DATAMANAGEMENTAbi = DATAMANAGEMENTABI;
 export const DATAMANAGEMENTCONTRACTID = '0.0.5243021';
-export const  SURVEYMANAGERCONTRACT ="0x31E09eac262EA36986A7B145cdc62AB364f23374"
-export const  SURVEYMANAGERCONTRACTID = '0.0.5243997'
+export const  SURVEYMANAGERCONTRACT ="0xE234866e2BDB1000ce1366A321c466335108cb2d"
+export const  SURVEYMANAGERCONTRACTID = '0.0.5248914'
 export const SURVEYABI = SurveyAbi;
+export const FEEDBACKABI = FeedBackABI;
+export const FEEDBACKCONTRACT = '0xFf4A87273E321E200D5214252181027557a07e05'
+export const FEEDBACKCONTRACTID = '0.0.5255131'

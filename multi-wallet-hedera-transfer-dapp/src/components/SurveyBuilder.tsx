@@ -1,6 +1,6 @@
 // SurveyBuilder.tsx
 import React, { useState, ChangeEvent } from 'react';
-import { FormStructure, FormField, NewField, FieldType } from '../config/type';
+import { FormStructure, FormField, NewField, FieldType } from '../config/types';
 
 interface SurveyBuilderProps {
   onSubmit?: (formData: FormStructure) => void;

@@ -41,7 +41,7 @@ contract SurveyManager is HederaTokenService {
     fallback() external payable {}
 
     modifier surveyExists(uint256 _surveyId) {
-        require(_surveyId < surveyCount, "Survey does not exist");
+        require(_surveyId <= surveyCount, "Survey does not exist");
         _;
     }
 
@@ -52,7 +52,7 @@ contract SurveyManager is HederaTokenService {
 
     modifier surveyActive(uint256 _surveyId) {
         require(surveys[_surveyId].isActive, "Survey is not active");
-        require(block.timestamp < surveys[_surveyId].endDate, "Survey has ended");
+        require(block.timestamp <= surveys[_surveyId].endDate, "Survey has ended");
         _;
     }
 
@@ -71,7 +71,7 @@ contract SurveyManager is HederaTokenService {
         uint256 totalRewardRequired = _responsesNeeded * _rewardPerResponse;
         require(msg.value >= totalRewardRequired, "Insufficient HBAR for rewards");
 
-        uint256 surveyId = surveyCount++;
+        uint256 surveyId = ++surveyCount;
         
         surveys[surveyId] = Survey({
             creator: msg.sender,

@@ -31,9 +31,10 @@ export const NavBar: React.FC = () => {
 
   const tabs = [
     { path: '/provision', label: 'Data Provision' },
-    { path: '/survey', label: 'Survey' },
+    { path: '/survey', label: 'Survey and Research' },
+    { path: '/feedback', label: 'Feedback' },
     { path: '/research', label: 'Research' },
-    { path: '/review', label: 'Review' }
+
   ];
 
   return (

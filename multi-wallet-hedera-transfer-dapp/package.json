@@ -11,6 +11,8 @@
     "@libp2p/bootstrap": "^10.1.2",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.0",
+    "@tiptap/react": "^2.10.3",
+    "@tiptap/starter-kit": "^2.10.3",
     "@types/node": "^16.18.31",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",

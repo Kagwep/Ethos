@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PlusCircle, Pencil, Trash2, Users, ArrowRight, ClipboardList } from 'lucide-react';
 import SurveyBuilder from '../components/SurveyBuilder';
-import { FormStructure } from '../config/type';
+import { FormResponse, FormStructure } from '../config/types';
 import { SurveyBuilderModal } from '../components/SurveyBuilderModal';
 import { uploadToIPFS } from '../components/Infura';
 import { toast } from 'react-hot-toast';
@@ -11,6 +11,8 @@ import { ContractId } from '@hashgraph/sdk';
 import { SURVEYABI, SURVEYMANAGERCONTRACT, SURVEYMANAGERCONTRACTID } from '../config/constants';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { ethers } from 'ethers';
+import ResponseView from '../components/ResponseView';
+import SurveyFormRenderer from '../components/SurveyFormRenderer';
 
 
 interface Survey {
@@ -43,6 +45,7 @@ const SurveyPage = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSurvey, setActiveSurvey] = useState(null);
 
 
   const provider = new ethers.providers.JsonRpcProvider("https://testnet.hashio.io/api");
@@ -57,6 +60,8 @@ const SurveyPage = () => {
     provider
   );
 
+  console.log(activeSurvey)
+
 
   const fetchSurveys = async () => {
     try {
@@ -68,7 +73,7 @@ const SurveyPage = () => {
   
       const surveys = [];
       // Fetch each survey
-      for (let i = 0; i < count.toNumber(); i++) {
+      for (let i = 0; i <= count.toNumber(); i++) {
         const details = await contract.getSurveyDetails(i);
   
         console.log(details)
@@ -132,37 +137,32 @@ const SurveyPage = () => {
       console.log(ipfsHash);
   
 
-        const paramBuilder = new ContractFunctionParameterBuilder()
-        .addParam({
+      const paramBuilder = new ContractFunctionParameterBuilder()
+      .addParam({
           type: "string",
           name: "name",
           value: currentFormData.title,
-        })
-        .addParam({
+      })
+      .addParam({
           type: "string",
           name: "ipfsHash",
           value: ipfsHash,
-        })
-        .addParam({
+      })
+      .addParam({
           type: "uint256",
           name: "responsesNeeded",
           value: contractData.responsesNeeded,
-        })
-        .addParam({
+      })
+      .addParam({
           type: "uint256",
           name: "endDate",
-          value: contractData.endDate, // You'll need to implement IPFS upload
-        })
-        .addParam({
-          type: "uint256",
-          name: "responsesNeeded",
-          value: contractData.responsesNeeded,
-        })
-        .addParam({
+          value: contractData.endDate,
+      })
+      .addParam({
           type: "uint256",
           name: "rewardPerResponse",
           value: contractData.rewardPerResponse,
-        });
+      });
 
         console.log(paramBuilder)
     
@@ -186,31 +186,84 @@ const SurveyPage = () => {
   
 
 
-  const Modal = () => (
+  // Dummy handler for response submission
+  const handleResponseSubmit = async (surveyId: any, response: FormResponse) => {
+    console.log('Submitting response for survey:', surveyId);
+    console.log('Response content:', response);
 
- 
-    showModal ? (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <SurveyBuilder />
-          <div className="mt-6 flex justify-end gap-2">
-            <button 
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-              onClick={() => setShowModal(false)}
-            >
-              Cancel
-            </button>
-            <button 
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              onClick={() => setShowModal(false)}
-            >
-              Create
-            </button>
-          </div>
-        </div>
-      </div>
-    ): null
-  );
+    if (!response) return;
+
+    try {
+
+    const jsonString = JSON.stringify(response, null, 2);
+
+    // Create a new Blob with the JSON data
+    const jsonBlob = new Blob([jsonString], { type: 'application/json' });
+  
+    // Create a File object from the Blob
+    const jsonFile = new File([jsonBlob], `${response.formId}-survey.json`, { type: 'application/json' });
+
+    
+    // Upload form data to IPFS first
+    const ipfsHash = await uploadToIPFS(jsonFile);
+    
+
+    const paramBuilder = new ContractFunctionParameterBuilder()
+    .addParam({
+      type: "uint256",
+      name: "surveyId",
+      value: surveyId,
+    })
+    .addParam({
+      type: "string",
+      name: "ipfsHash",
+      value: ipfsHash,
+    });
+
+
+    const result = await walletInterface?.executeContractFunction(
+      SURVEYMANAGERCONTRACTID as unknown as ContractId,
+      "submitResponse",
+      paramBuilder,
+      800000
+    );
+  
+
+    toast.success('Survey response created successfully!');
+  } catch (error) {
+    console.error('Error:', error);
+    // Display error message
+    toast.error('Failed to submit survey response. Please check the console for details.');
+  }
+
+    setActiveSurvey(null); // Return to survey list
+  };
+
+// Handler for when user clicks "Participate Now"
+const handleParticipate = (survey: any) => {
+  // Check if user has already responded
+
+  // Verify survey is still active
+  if (!survey.isActive) {
+    alert('This survey is no longer active');
+    return;
+  }
+  
+  // Check if survey has reached response limit
+  if (survey.responseCount >= survey.responsesNeeded) {
+    alert('This survey has reached its response limit');
+    return;
+  }
+  
+  // Check if survey has ended
+  if (Date.now() / 1000 > survey.endDate) {
+    alert('This survey has ended');
+    return;
+  }
+  
+  // All checks passed, set active survey
+  setActiveSurvey(survey);
+};
 
   const AdminView = () => (
     <div className="space-y-6">
@@ -221,6 +274,7 @@ const SurveyPage = () => {
         </div>
         
         <button
+          onClick={() => setShowSurveyModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           <PlusCircle className="w-4 h-4" />
@@ -272,7 +326,7 @@ const SurveyPage = () => {
       
   );
   
-  const ParticipantView = () => (
+  const ParticipantView = ({ onParticipate }:{ onParticipate: any }) => (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-green-700">Available Surveys</h1>
@@ -307,10 +361,13 @@ const SurveyPage = () => {
               {survey.isActive && 
                survey.responseCount < survey.responsesNeeded && 
                Date.now() / 1000 < survey.endDate ? (
-                <button className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors">
-                  Participate Now
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+              <button
+                onClick={() => handleParticipate(survey)} 
+                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
+              >
+                Participate Now
+                <ArrowRight className="w-4 h-4" />
+              </button>
               ) : (
                 <div className="w-full py-3 text-center text-gray-500">
                   {!survey.isActive ? "Survey Inactive" : 
@@ -335,34 +392,48 @@ const SurveyPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12 text-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="space-y-6">
         <div className="border-b">
           <div className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('participate')}
-              className={`px-4 py-2 -mb-px font-medium ${
-                activeTab === 'participate'
-                  ? 'border-b-2 border-green-600 text-green-700'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Participate
-            </button>
-            <button
-              onClick={() => setActiveTab('manage')}
-              className={`px-4 py-2 -mb-px font-medium ${
-                activeTab === 'manage'
-                  ? 'border-b-2 border-green-600 text-green-700'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Manage Surveys
-            </button>
+            {!activeSurvey && (
+              <>
+                <button
+                  onClick={() => setActiveTab('participate')}
+                  className={`px-4 py-2 -mb-px font-medium ${
+                    activeTab === 'participate'
+                      ? 'border-b-2 border-green-600 text-green-700'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Participate
+                </button>
+                <button
+                  onClick={() => setActiveTab('manage')}
+                  className={`px-4 py-2 -mb-px font-medium ${
+                    activeTab === 'manage'
+                      ? 'border-b-2 border-green-600 text-green-700'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Manage Surveys
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {activeTab === 'participate' ? <ParticipantView /> : <AdminView />}
+        {activeSurvey ? (
+          <SurveyFormRenderer
+            survey={activeSurvey}
+            onBack={() => setActiveSurvey(null)}
+            onSubmit={handleResponseSubmit}
+          />
+        ) : (
+          activeTab === 'participate' ? 
+            <ParticipantView onParticipate={setActiveSurvey} /> : 
+            <AdminView />
+        )}
       </div>
       <SurveyBuilderModal
         showModal={showSurveyModal}

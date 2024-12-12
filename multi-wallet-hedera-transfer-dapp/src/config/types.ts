@@ -75,6 +75,44 @@ export interface FormResponse {
   }
   
 
+  export interface ReviewFile {
+    name: string;
+    type: string;
+    url: string;
+  }
+  
+  export interface ReviewStructure {
+    id: string;
+    productName: string;
+    category: string;
+    description: string;
+    deadline: string;
+    purchaseRequired: boolean;
+    compensation: string;
+    reviewCriteria: string[];
+    productFiles: ReviewFile[];
+    responses: any[];
+  }
+  
+  export interface ReviewBuilderProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+    onSubmit?: (data: ReviewStructure) => void;
+  }
+
+  export interface ContractResponse {
+    respondent: string;
+    ipfsHash: string;
+    isApproved: boolean;
+    isPaid: boolean;
+  }
+  
+  export interface SurveyResponse extends ContractResponse {
+    surveyId: number;
+    responseId: number;
+    formResponse?: FormResponse; // The actual form data from IPFS
+  }
+
 //   // types.ts
 // export type Tool = 'pointer' | 'rectangle' | 'circle' | 'freehand' | 'label';
 
@@ -150,3 +188,21 @@ export type Annotation =
   | KeypointAnnotation 
   | CuboidAnnotation 
   | PolylineAnnotation;
+
+
+  export interface Feedback {
+    id: number;                 // Feedback ID from contract
+    ipfsHash: string;          // IPFS hash storing the complete feedback data
+    topic: string;             // Main topic/subject of the feedback
+    description: string;       // Detailed description of what feedback is needed
+    creator: string;           // Ethereum address of creator
+    createdAt: number;         // Unix timestamp in seconds
+    responseCount: number;     // Number of responses received
+    active: boolean;           // Whether feedback is still active
+  };
+
+
+  export interface FeedbackResponse  {
+    responder: string;         // Ethereum address of responder
+    submittedAt: number;       // Unix timestamp in seconds
+  };

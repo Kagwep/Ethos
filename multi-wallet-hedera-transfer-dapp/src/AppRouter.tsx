@@ -12,7 +12,7 @@ import { useContext } from "react";
 import { WalletConnectContext } from "./contexts/WalletConnectContext";
 import SurveyPage from "./pages/Survey";
 import ResearchPage from "./pages/ResearchPage";
-import ReviewPage from "./pages/ReviewPage";
+import FeedBackPage from "./pages/FeedBackPage";
 
 
 
@@ -30,7 +30,7 @@ export default function AppRouter() {
         <Route path="/provision" element={<DataProvisionPage />} />
         <Route path="/survey" element={<SurveyPage />} />
         <Route path="/research" element={<ResearchPage />} />
-        <Route path="/review" element={<ReviewPage />} />
+        <Route path="/feedback" element={<FeedBackPage  />} />
       </Route>
     </Routes>
   );
