@@ -2,9 +2,21 @@ import React, { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import FilesSection from './FilesSection';
+import { ArrowLeft } from 'lucide-react';
+import RichTextEditor from './RichTextEditor';
+
+interface ReviewResponse {
+  id: string;
+  reviewId: string;
+  rating: number;
+  content: string;
+  author: string;
+  submittedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
 
 
-interface ReviewDetails {
+export interface ReviewDetails {
   id: string;
   productName: string;
   category: string;
@@ -18,26 +30,21 @@ interface ReviewDetails {
     type: string;
     url: string;
   }[];
+  responses: ReviewResponse[]
 }
 
-interface ReviewResponse {
-  id: string;
-  reviewId: string;
-  rating: number;
-  content: string;
-  author: string;
-  submittedAt: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
 
 interface FeedbackRespondProps {
   review: ReviewDetails;
-  onSubmit: (response: ReviewResponse) => void;
+  feedbackId:number;
+  onSubmit: (responseData: any) => void;
+  onBack: () => void;  
 }
 
-const FeedbackRespond: React.FC<FeedbackRespondProps> = ({ review, onSubmit }) => {
+const FeedbackRespond: React.FC<FeedbackRespondProps> = ({ review,feedbackId, onSubmit, onBack }) => {
   const [rating, setRating] = useState(0);
   const [author, setAuthor] = useState('');
+  const [content, setContent] = useState('');
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -56,17 +63,43 @@ const FeedbackRespond: React.FC<FeedbackRespondProps> = ({ review, onSubmit }) =
       id: `response_${Date.now()}`,
       reviewId: review.id,
       rating,
-      content: editor!.getHTML(),
+      content: content,
       author,
       submittedAt: new Date().toISOString(),
       status: 'pending'
     };
 
-    onSubmit(response);
+    const updatedReview: ReviewDetails = {
+      ...review,
+      responses: [...review.responses, response]
+    };
+
+    console.log(review.id)
+
+    onSubmit({
+      reviewId: feedbackId,
+      response: response,
+      updatedReview: updatedReview
+    });
+    console.log(updatedReview)
   };
+
+  
+
+  console.log(review)
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* Header */}
+      <div className="flex items-center gap-2 text-green-700">
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 hover:text-green-800"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <h2 className="text-2xl font-bold">Submit Feedback Response</h2>
+        </button>
+      </div>
       {/* Review Details Section */}
       <div className="bg-white rounded-lg shadow mb-8">
         <div className="p-6">
@@ -144,7 +177,10 @@ const FeedbackRespond: React.FC<FeedbackRespondProps> = ({ review, onSubmit }) =
               Your Review
             </label>
             <div className="border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-              <EditorContent editor={editor} />
+            <RichTextEditor 
+              content={content}
+              onChange={(newContent) => setContent(newContent)}
+            />
             </div>
           </div>
 

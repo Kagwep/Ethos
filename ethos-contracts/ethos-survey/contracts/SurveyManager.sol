@@ -17,6 +17,7 @@ contract SurveyManager is HederaTokenService {
     }
 
     struct Response {
+        uint256 id;
         address respondent;
         string ipfsHash;
         bool isApproved;
@@ -98,6 +99,7 @@ contract SurveyManager is HederaTokenService {
         uint256 responseId = responseCountPerSurvey[_surveyId]++;
         
         responses[_surveyId][responseId] = Response({
+            id: responseId,
             respondent: msg.sender,
             ipfsHash: _ipfsHash,
             isApproved: false,
@@ -184,5 +186,36 @@ contract SurveyManager is HederaTokenService {
             survey.isActive,
             survey.rewardPerResponse
         );
+    }
+
+    function getResponses(uint256 _surveyId)
+        external
+        view
+        surveyExists(_surveyId)
+        returns (
+            uint256[] memory ids,
+            address[] memory respondents,
+            string[] memory ipfsHashes,
+            bool[] memory approvalStatuses,
+            bool[] memory paymentStatuses
+        )
+    {
+        uint256 totalResponses = responseCountPerSurvey[_surveyId];
+        ids = new uint256[](totalResponses);
+        respondents = new address[](totalResponses);
+        ipfsHashes = new string[](totalResponses);
+        approvalStatuses = new bool[](totalResponses);
+        paymentStatuses = new bool[](totalResponses);
+        
+        for (uint256 i = 0; i < totalResponses; i++) {
+            Response storage response = responses[_surveyId][i];
+            ids[i] = response.id;
+            respondents[i] = response.respondent;
+            ipfsHashes[i] = response.ipfsHash;
+            approvalStatuses[i] = response.isApproved;
+            paymentStatuses[i] = response.isPaid;
+        }
+        
+        return (ids,respondents, ipfsHashes, approvalStatuses, paymentStatuses);
     }
 }

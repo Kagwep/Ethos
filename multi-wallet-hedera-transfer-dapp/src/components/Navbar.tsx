@@ -33,7 +33,7 @@ export const NavBar: React.FC = () => {
     { path: '/provision', label: 'Data Provision' },
     { path: '/survey', label: 'Survey and Research' },
     { path: '/feedback', label: 'Feedback' },
-    { path: '/research', label: 'Research' },
+    { path: '/research', label: 'Insight' },
 
   ];
 

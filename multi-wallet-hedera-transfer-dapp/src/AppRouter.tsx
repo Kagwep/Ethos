@@ -11,8 +11,8 @@ import DataProvisionPage from "./components/DataProvisionPage";
 import { useContext } from "react";
 import { WalletConnectContext } from "./contexts/WalletConnectContext";
 import SurveyPage from "./pages/Survey";
-import ResearchPage from "./pages/ResearchPage";
 import FeedBackPage from "./pages/FeedBackPage";
+import AIResearchInsights from "./pages/ResearchPage";
 
 
 
@@ -29,7 +29,7 @@ export default function AppRouter() {
       <Route element={<ProtectedRoute />}>
         <Route path="/provision" element={<DataProvisionPage />} />
         <Route path="/survey" element={<SurveyPage />} />
-        <Route path="/research" element={<ResearchPage />} />
+        <Route path="/research" element={<AIResearchInsights />} />
         <Route path="/feedback" element={<FeedBackPage  />} />
       </Route>
     </Routes>

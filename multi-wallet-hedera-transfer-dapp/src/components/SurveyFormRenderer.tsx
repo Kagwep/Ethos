@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
-import { FormStructure, FormField, FormResponse } from '../config/types';
+import { FormStructure, FormField, FormResponse, FieldSubmission, FieldResponse } from '../config/types';
+import { uploadToIPFS } from './Infura';
 
 interface SurveyFormProps {
   survey: {
@@ -16,7 +17,17 @@ interface SurveyFormProps {
 
 const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmit }) => {
   const [formStructure, setFormStructure] = useState<FormStructure | null>(null);
-  const [responses, setResponses] = useState<FormResponse['responses']>({});
+  const [formResponse, setFormResponse] = useState<FormResponse>({
+    formId: '',
+    title: '',
+    description: '',
+    submissions: [],
+    submittedAt: new Date().toISOString(),
+    metadata: {
+      version: '1.0',
+      platform: 'web'
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<{ [key: string]: string }>({});
@@ -28,6 +39,12 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
         const response = await fetch(survey.ipfsHash);
         const data = await response.json();
         setFormStructure(data);
+        setFormResponse(prev => ({
+          ...prev,
+          formId: data.title.toLowerCase().replace(/\s+/g, '-'),
+          title: data.title,
+          description: data.description
+        }));
       } catch (error) {
         console.error('Error fetching form structure:', error);
         alert('Failed to load survey form');
@@ -40,28 +57,24 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
   }, [survey.ipfsHash]);
 
   const handleInputChange = (field: FormField, value: string | string[] | number) => {
-    setResponses(prev => ({
-      ...prev,
-      [field.id]: value
-    }));
-  };
+    setFormResponse(prev => {
+      const newSubmission: FieldSubmission<typeof field.type> = {
+        fieldId: field.id,
+        field: field,
+        value: value as FieldResponse[typeof field.type],
+        timestamp: new Date().toISOString()
+      };
 
-  const uploadToIPFS = async (file: File): Promise<string> => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await fetch('YOUR_IPFS_UPLOAD_URL', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      return data.cid;
-    } catch (error) {
-      console.error('Error uploading to IPFS:', error);
-      throw new Error('Failed to upload image');
-    }
+      const existingIndex = prev.submissions.findIndex(s => s.fieldId === field.id);
+      const newSubmissions = existingIndex >= 0 
+        ? prev.submissions.map((s, i) => i === existingIndex ? newSubmission : s)
+        : [...prev.submissions, newSubmission];
+
+      return {
+        ...prev,
+        submissions: newSubmissions
+      };
+    });
   };
 
   const handleImageUpload = async (field: FormField, file: File) => {
@@ -83,10 +96,8 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
       }));
 
       const ipfsUrl = await uploadToIPFS(file);
-      setResponses(prev => ({
-        ...prev,
-        [field.id]: ipfsUrl
-      }));
+      
+      handleInputChange(field, ipfsUrl as any);
     } catch (error) {
       console.error('Error handling image upload:', error);
       alert('Failed to upload image');
@@ -98,12 +109,17 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
     }
   };
 
+  const getFieldValue = (fieldId: string) => {
+    const submission = formResponse.submissions.find(s => s.fieldId === fieldId);
+    return submission?.value;
+  };
+
   const handleSubmit = async () => {
     if (!formStructure) return;
 
     const missingRequired = formStructure.fields
       .filter(field => field.required)
-      .filter(field => !responses[field.id]);
+      .filter(field => !getFieldValue(field.id));
 
     if (missingRequired.length > 0) {
       alert(`Please fill in all required fields: ${missingRequired.map(f => f.label).join(', ')}`);
@@ -112,13 +128,12 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
 
     setIsSubmitting(true);
     try {
-      const formResponse: FormResponse = {
-        formId: formStructure.title.toLowerCase().replace(/\s+/g, '-'),
-        responses,
+      const finalFormResponse: FormResponse = {
+        ...formResponse,
         submittedAt: new Date().toISOString()
       };
 
-      await onSubmit(survey.id, formResponse);
+      await onSubmit(survey.id, finalFormResponse);
     } catch (error) {
       console.error('Failed to submit response:', error);
       alert('Failed to submit response. Please try again.');
@@ -183,7 +198,7 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                   {field.type === 'text' && (
                     <input
                       type="text"
-                      value={(responses[field.id] as string) || ''}
+                      value={getFieldValue(field.id) as string || ''}
                       onChange={(e) => handleInputChange(field, e.target.value)}
                       required={field.required}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -194,7 +209,7 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                   {/* Textarea */}
                   {field.type === 'textarea' && (
                     <textarea
-                      value={(responses[field.id] as string) || ''}
+                    value={getFieldValue(field.id) as string || ''}
                       onChange={(e) => handleInputChange(field, e.target.value)}
                       required={field.required}
                       rows={4}
@@ -207,7 +222,7 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                   {field.type === 'number' && (
                     <input
                       type="number"
-                      value={(responses[field.id] as number) || ''}
+                      value={(getFieldValue(field.id) as number) || ''}
                       onChange={(e) => handleInputChange(field, Number(e.target.value))}
                       required={field.required}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -225,7 +240,7 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                             id={`${field.id}-${index}`}
                             name={field.id}
                             value={option}
-                            checked={(responses[field.id] as string) === option}
+                            checked={getFieldValue(field.id) as string === option}
                             onChange={(e) => handleInputChange(field, e.target.value)}
                             required={field.required}
                             className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
@@ -251,9 +266,9 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                             type="checkbox"
                             id={`${field.id}-${index}`}
                             value={option}
-                            checked={(responses[field.id] as string[])?.includes(option)}
+                            checked={(getFieldValue(field.id) as string[])?.includes(option)}
                             onChange={(e) => {
-                              const currentValues = (responses[field.id] as string[]) || [];
+                              const currentValues = (getFieldValue(field.id) as string[]) || [];
                               const newValues = e.target.checked
                                 ? [...currentValues, option]
                                 : currentValues.filter(v => v !== option);
@@ -276,7 +291,7 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                   {/* Select Dropdown */}
                   {field.type === 'select' && field.options && (
                     <select
-                      value={(responses[field.id] as string) || ''}
+                    value={getFieldValue(field.id) as string || ''}
                       onChange={(e) => handleInputChange(field, e.target.value)}
                       required={field.required}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -327,9 +342,9 @@ const SurveyFormRenderer: React.FC<SurveyFormProps> = ({ survey, onBack, onSubmi
                             alt="Preview"
                             className="max-w-xs h-auto rounded border border-gray-300"
                           />
-                          {responses[field.id] && (
+                          {getFieldValue(field.id) && (
                             <p className="text-sm text-gray-500 mt-1">
-                              Uploaded to IPFS: {responses[field.id]}
+                              Uploaded to IPFS: {getFieldValue(field.id)}
                             </p>
                           )}
                         </div>

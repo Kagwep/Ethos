@@ -1,1 +1,1 @@
-SurveyManagerContract
+SurveyManagerContract: 0x8F021Aa1dC5642a6Ef9F49fB5e59A4f214D25151

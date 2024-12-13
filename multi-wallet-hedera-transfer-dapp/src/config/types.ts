@@ -66,14 +66,35 @@ export interface NewField extends Omit<FormField, 'id'> {
   options: string[];
 }
 
+// Define possible response types based on field type
+export type FieldResponse = {
+  text: string;
+  textarea: string;
+  number: number;
+  radio: string;
+  checkbox: string[];
+  select: string | string[];
+  imageFile: string; // Usually a URL or file path
+}
+
+export interface FieldSubmission<T extends FieldType> {
+  fieldId: string;
+  field: FormField;  // Original field definition
+  value: FieldResponse[T];
+  timestamp?: string; // Optional, if you want to track when each field was answered
+}
+
 export interface FormResponse {
-    formId: string;
-    responses: {
-      [fieldId: string]: string | string[] | number;
-    };
-    submittedAt: string;
-  }
-  
+  formId: string;
+  title: string;
+  description: string;
+  submissions: FieldSubmission<FieldType>[];
+  submittedAt: string;
+  metadata?: {
+    version?: string;
+    platform?: string;
+  };
+}
 
   export interface ReviewFile {
     name: string;
