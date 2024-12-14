@@ -22,7 +22,6 @@ export class DataAnalysisAgent {
     private openai: OpenAI;
     
     constructor(config: DataAnalysisAgentConfig) {
-        console.log(config.openaiApiKey)
         this.openai = new OpenAI({
             apiKey: config.openaiApiKey,
             dangerouslyAllowBrowser: true

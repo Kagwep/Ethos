@@ -7,6 +7,10 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <script>
+      // Required by some npm packages
+      window.process = { browser: true, env: { ENVIRONMENT: 'BROWSER' } };
+  </script>
     <title></title>
   </head>
   <body>

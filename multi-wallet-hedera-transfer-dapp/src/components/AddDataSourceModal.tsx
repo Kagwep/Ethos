@@ -3,15 +3,20 @@ import { Plus, X, Upload, AlertCircle } from 'lucide-react';
 import { uploadToIPFS } from './Infura';
 import { toast } from 'react-hot-toast';
 import { AccountId, ContractId, TokenId, TransactionId } from "@hashgraph/sdk";
-import { DATAMANAGEMENTCONTRACT, DATAMANAGEMENTCONTRACTID } from '../config/constants';
+import { ALLOWED_MIME_TYPES, DATAMANAGEMENTCONTRACT, DATAMANAGEMENTCONTRACTID } from '../config/constants';
 import { ContractFunctionParameterBuilder } from '../services/wallets/contractFunctionParameterBuilder';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { encryptionService } from '../services/EncryptionService';
+import * as fileType from 'file-type';
+import mime from 'mime-types';
+import validateFile, { FileValidationOptions } from '../config';
+import { ContentAnalysisAgent } from './ContentAnalysisConfig';
+import FileAnalysisFeedback from './ FileAnalysisFeedback';
 
-const MAX_SIZE_MB = 10;
+const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-const DATA_TYPES = ['CSV', 'JSON', 'XML', 'PDF', 'Other'];
+const DATA_TYPES = ['CSV', 'JSON', 'XML', 'PDF'];
 
 interface AddDataSourceModalProps {
     onSuccess: () => void;  // callback function to refresh the data sources list
@@ -30,6 +35,13 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
   });
   const [error, setError] = useState('');
   const { walletInterface } = useWalletInterface();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>();
+
+  const agent = new ContentAnalysisAgent({
+    openaiApiKey: process.env.REACT_APP_ETHOS as any || ' ',
+    maxSizeBytes: 5 * 1024 * 1024 // 5MB
+});
 
   const handleFileChange = async (event: any) => {
     const selectedFile = event.target.files[0];
@@ -40,16 +52,50 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
         setFile(null);
       } else {
         setError('');
+        setIsAnalyzing(true);
         try {
-          const fileUrl = await uploadToIPFS(selectedFile);
-          if (!fileUrl) {
-            toast.error('Failed to upload file. Please try again.');
-          } else {
-            setFileName(selectedFile)
-            setFile(fileUrl as any);
+
+          const options: FileValidationOptions = {
+            allowedMimeTypes: ALLOWED_MIME_TYPES,
+            maxSizeBytes: 5 * 1024 * 1024 // 5MB
+          };
+          
+         const isValid = await validateFile(selectedFile, options);
+
+         console.log(isValid)
+
+         const analysis = await agent.analyzeContent(selectedFile);
+         setAnalysisResult(analysis as any);
+
+          if (analysis.isValid) {
+              if (analysis.warnings?.length) {
+                  console.warn('Content warnings:', analysis.warnings);
+              }
+              console.log(analysis)
+              console.log('Analysis insights:', analysis.insights);
+              
+              // Now safe to upload to IPFS
+              const fileUrl = await uploadToIPFS(selectedFile);
+
+              if (!fileUrl) {
+                setAnalysisResult({
+                  isValid: false,
+                  error: 'Failed to upload file. Please try again.'
+                });
+              } else {
+                setFileName(selectedFile)
+                setFile(fileUrl as any);
+              }
+              
           }
+          
         } catch (error) {
-          toast.error('An error occurred during file upload.');
+          setAnalysisResult({
+            isValid: false,
+            error: 'An error occurred during file upload.'
+          });
+        }finally {
+          setIsAnalyzing(false);
         }
       }
     }
@@ -251,6 +297,11 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
                 <label className="block text-sm font-medium text-gray-700">
                   Upload File (Max {MAX_SIZE_MB}MB)
                 </label>
+                <FileAnalysisFeedback 
+                    analysis={analysisResult}
+                    isAnalyzing={isAnalyzing}
+                    onComplete={() => setAnalysisResult(null)}
+                  />
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                   <div className="text-center">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />

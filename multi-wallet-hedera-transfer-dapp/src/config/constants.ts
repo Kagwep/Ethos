@@ -14,3 +14,13 @@ export const SURVEYABI = SurveyAbi;
 export const FEEDBACKABI = FeedBackABI;
 export const FEEDBACKCONTRACT = '0xFf4A87273E321E200D5214252181027557a07e05'
 export const FEEDBACKCONTRACTID = '0.0.5255131'
+
+
+export const ALLOWED_MIME_TYPES = [
+    'application/json',
+    'text/csv',
+    'text/plain',
+    'application/pdf',
+    'application/xml',
+    'text/xml'
+  ];
