@@ -186,7 +186,7 @@ class MetaMaskWallet implements WalletInterface {
           gasLimit: gasLimit === -1 ? undefined : gasLimit
         }
       );
-      return txResult.hash;
+      return txResult;
     } catch (error: any) {
       console.warn(error.message ? error.message : error);
       return null;

@@ -5,7 +5,7 @@ export class EncryptionService {
   private readonly encryptionKey: string;
 
   constructor() {
-    const envKey = process.env.REACT_APP_ENCRYPTION_KEY;
+    const envKey = process.env.REACT_APP_ENCRYPTION;
     if (!envKey) {
       throw new Error('ENCRYPTION_KEY must be set in environment variables');
     }

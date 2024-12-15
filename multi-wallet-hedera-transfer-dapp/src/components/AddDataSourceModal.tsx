@@ -135,9 +135,6 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
 
       const encryptedLink = encryptionService.encrypt(file!);
 
-      console.log(encryptedLink)
-    
-    
       const paramBuilder = new ContractFunctionParameterBuilder()
         .addParam({
           type: "string",

@@ -357,14 +357,14 @@ const handleProcessRequest = async (requestId: number, approved: boolean) => {
                           }`}>
                             {source.isActive ? 'Active' : 'Inactive'}
                           </span>
-                          {source.storageLink === "" && (
+                    
                             <RequestAccessButton 
                               dataSource={source}
                               onSuccess={() => {
                                 fetchDataSources()
                               }}
                             />
-                          )}
+                          
                         </div>
                       ))
                     )}

@@ -8,7 +8,8 @@ import { SignClientTypes } from "@walletconnect/types";
 import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId, SignAndExecuteTransactionParams, transactionToBase64String, DAppSigner } from "@hashgraph/hedera-wallet-connect";
 import EventEmitter from "events";
 import { DATAMANAGEMENTCONTRACTID } from "../../../config/constants";
-
+import { HederaMessageSender } from "../../HederaMessageSender";
+import { v4 as uuidv4 } from 'uuid';
 // Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
 // Reference usage from walletconnect implementation https://github.com/hashgraph/hedera-wallet-connect/blob/main/src/lib/dapp/index.ts#L120C1-L124C9
 const refreshEvent = new EventEmitter();
@@ -27,6 +28,12 @@ const metadata: SignClientTypes.Metadata = {
   url: window.location.origin,
   icons: ["https://res.cloudinary.com/dydj8hnhz/image/upload/v1733555362/wcd7jawrnaxtfncb2kyd.png"],
 }
+
+
+const sender = new HederaMessageSender(
+  process.env.REACT_MY_ACCOUNT_ID!,
+  process.env.REACT_MY_ETHOS!
+);
 
 export const dappConnector = new DAppConnector(
   metadata,
@@ -128,9 +135,25 @@ class WalletConnectWallet implements WalletInterface {
     await tx.freezeWithSigner(signer);
     const txResult = await tx.executeWithSigner(signer);
 
+    const message = {
+      eventType: "CONTRACT EXECUTION",
+      timestamp: new Date().toISOString(),
+      userId: this.getAccountId(),
+      dataId: uuidv4(),
+      action: "call",
+      details: {
+          functionName: functionName
+      }
+  };
+   
+        await sender.sendMessage(
+          process.env.REACT_GENERAL_TOPIC_ID as any, 
+          JSON.stringify(message)
+      );
+
     // in order to read the contract call results, you will need to query the contract call's results form a mirror node using the transaction id
     // after getting the contract call results, use ethers and abi.decode to decode the call_result
-    return txResult ? txResult.transactionId : null;
+    return txResult;
   }
 
 
