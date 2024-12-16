@@ -10,7 +10,7 @@ export const AllWalletsProvider = (props: {
   return (
     <MetamaskContextProvider>
       <WalletConnectContextProvider>
-        <MetaMaskClient />
+        {/* <MetaMaskClient /> */}
         <WalletConnectClient />
         {props.children}
       </WalletConnectContextProvider>

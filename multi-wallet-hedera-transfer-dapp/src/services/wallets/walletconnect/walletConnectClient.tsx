@@ -31,8 +31,8 @@ const metadata: SignClientTypes.Metadata = {
 
 
 const sender = new HederaMessageSender(
-  process.env.REACT_MY_ACCOUNT_ID!,
-  process.env.REACT_MY_ETHOS!
+  process.env.REACT_APP_MY_ACCOUNT_ID!,
+  process.env.REACT_APP_MY_ETHOS!
 );
 
 export const dappConnector = new DAppConnector(
@@ -147,7 +147,7 @@ class WalletConnectWallet implements WalletInterface {
   };
    
         await sender.sendMessage(
-          process.env.REACT_GENERAL_TOPIC_ID as any, 
+          process.env.REACT_APP_GENERAL_TOPIC_ID as any, 
           JSON.stringify(message)
       );
 

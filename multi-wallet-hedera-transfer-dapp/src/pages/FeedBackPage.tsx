@@ -11,6 +11,9 @@ import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { ethers } from 'ethers';
 import FeedbackRespond, { ReviewDetails } from '../components/FeedbackRespond';
 import FeedbackResponsesView from '../components/FeedbackResponsesView';
+import { v4 as uuidv4 } from 'uuid';
+import { HederaMessageSender } from '../services/HederaMessageSender';
+import { encryptionService } from '../services/EncryptionService';
 
 interface Review {
   id: number;
@@ -89,6 +92,10 @@ const FeedBackPage = () => {
   const abi = FEEDBACKABI;
   const contractAddress = FEEDBACKCONTRACT; // Make sure this is the EVM address
 
+  const sender = new HederaMessageSender(
+    process.env.REACT_APP_MY_ACCOUNT_ID!,
+    process.env.REACT_APP_MY_ETHOS!
+  );
 
   const contract = new ethers.Contract(
     contractAddress,
@@ -156,6 +163,23 @@ const FeedBackPage = () => {
       const ipfsData = await response.json();
   
 
+      const encryptedLink = encryptionService.encrypt(feedback.ipfsHash!);
+
+      const message = {
+        eventType: "Feedback Add",
+        timestamp: new Date().toISOString(),
+        userId: accountId,
+        dataId: uuidv4(),
+        action: "call",
+        details: {
+            ipfsHashEncoded: encryptedLink
+        }
+    };
+
+      await sender.sendMessage(
+        process.env.REACT_APP_FEEDBACK_TOPIC_ID  as any, 
+        JSON.stringify(message)
+    );
 
       console.log(ipfsData)
   
@@ -192,10 +216,12 @@ const FeedBackPage = () => {
     try {
       setIsLoading(true);
       setError(null);
+
+      
   
-      // Call the contract's deactivate function
-      const tx = await contract.deactivateFeedback(feedbackId);
-      await tx.wait();
+      // // Call the contract's deactivate function
+      // const tx = await contract.deactivateFeedback(feedbackId);
+      // await tx.wait();
   
       // Refresh the feedback list
       await fetchFeedbacks();
@@ -287,6 +313,24 @@ const FeedBackPage = () => {
         800000, // gas limit
       );
 
+      const encryptedLink = encryptionService.encrypt(ipfsHash!);
+
+      const message = {
+        eventType: "Feedback Add",
+        timestamp: new Date().toISOString(),
+        userId: accountId,
+        dataId: uuidv4(),
+        action: "call",
+        details: {
+            ipfsHashEncoded: encryptedLink
+        }
+    };
+
+      await sender.sendMessage(
+        process.env.REACT_APP_FEEDBACK_TOPIC_ID  as any, 
+        JSON.stringify(message)
+    );
+
     console.log('Review campaign created:', data);
     toast.success('Survey deployed successfully!');
   } catch (error) {
@@ -340,6 +384,25 @@ const FeedBackPage = () => {
         paramBuilder,
         800000, // gas limit
       );
+
+      const encryptedLink = encryptionService.encrypt(ipfsHash!);
+
+      const message = {
+        eventType: "FeedbackResponse",
+        timestamp: new Date().toISOString(),
+        userId: accountId,
+        dataId: uuidv4(),
+        action: "call",
+        details: {
+            ipfsHashEncoded: encryptedLink
+        }
+    };
+
+      await sender.sendMessage(
+        process.env.REACT_APP_FEEDBACK_TOPIC_ID  as any, 
+        JSON.stringify(message)
+    );
+
       
     } catch (error) {
       console.error("Error submitting feedback response:", error);
@@ -426,7 +489,7 @@ const FeedBackPage = () => {
             </div>
             
             <div className="px-6 py-4 border-t flex justify-end gap-2">
-              <button className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
+              <button onClick={() => handleSubmitResponseView(feedback)} className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
                 <MessageCircle className="w-4 h-4" /> View Responses
               </button>
               {feedback.active && (
@@ -544,7 +607,7 @@ const FeedBackPage = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Manage Reviews
+                Manage Feedback
               </button>
             </div>
           </div>
@@ -568,8 +631,13 @@ const FeedBackPage = () => {
             ) : (
               <ParticipantView/>
             )
+          ) : showResponses ? (
+            <FeedbackResponsesView
+              review={selectedFeedback as any}
+              onBack={() => setShowResponses(false)}
+            />
           ) : (
-            <AdminView />
+            <AdminView/>
           )}
         </div>
       </div>

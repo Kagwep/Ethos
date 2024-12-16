@@ -10,7 +10,6 @@ export class HederaMessageSender {
 
     constructor(accountId: string, privateKey: string) {
         this.client = Client.forTestnet();
-        console.log(accountId,privateKey)
         const operatorId = AccountId.fromString(accountId);
         const operatorKey = PrivateKey.fromStringECDSA(privateKey);
         this.client.setOperator(operatorId, operatorKey);
@@ -18,8 +17,10 @@ export class HederaMessageSender {
 
     async sendMessage(topicId: string, message: string): Promise<boolean> {
         try {
+            const tId = AccountId.fromString(topicId);
+            console.log(tId)
             const transaction = await new TopicMessageSubmitTransaction({
-                topicId: topicId,
+                topicId: tId,
                 message: message,
             }).execute(this.client);
 

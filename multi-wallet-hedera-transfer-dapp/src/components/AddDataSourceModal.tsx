@@ -12,6 +12,8 @@ import mime from 'mime-types';
 import validateFile, { FileValidationOptions } from '../config';
 import { ContentAnalysisAgent } from './ContentAnalysisConfig';
 import FileAnalysisFeedback from './ FileAnalysisFeedback';
+import { HederaMessageSender } from '../services/HederaMessageSender';
+import { v4 as uuidv4 } from 'uuid';
 
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -34,7 +36,7 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
     description: ''
   });
   const [error, setError] = useState('');
-  const { walletInterface } = useWalletInterface();
+  const { accountId,walletInterface } = useWalletInterface();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>();
 
@@ -42,6 +44,11 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
     openaiApiKey: process.env.REACT_APP_ETHOS as any || ' ',
     maxSizeBytes: 5 * 1024 * 1024 // 5MB
 });
+
+const sender = new HederaMessageSender(
+  process.env.REACT_APP_MY_ACCOUNT_ID!,
+  process.env.REACT_APP_MY_ETHOS!
+);
 
   const handleFileChange = async (event: any) => {
     const selectedFile = event.target.files[0];
@@ -175,6 +182,22 @@ const AddDataSourceModal:React.FC<AddDataSourceModalProps> = ({ onSuccess }) => 
         paramBuilder,
         800000 // gas limit
       );
+
+          const message = {
+            eventType: "Add Data",
+            timestamp: new Date().toISOString(),
+            userId: accountId,
+            dataId: uuidv4(),
+            action: "call",
+            details: {
+                ipfsencoded: encryptedLink
+            }
+        };
+     
+          await sender.sendMessage(
+            process.env.REACT_APP_PROVISIONS_TOPIC_ID as any, 
+            JSON.stringify(message)
+        );
 
       console.log(result)
     

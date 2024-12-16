@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Send, Link, Brain, Loader2, Coins, X } from 'lucide-react';
 import { DataAnalysisAgent } from '../components/DataAnalysisAgent';
+import { HederaMessageSender } from '../services/HederaMessageSender';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -28,6 +29,12 @@ const AIResearchInsights = () => {
   const agent = new DataAnalysisAgent({
     openaiApiKey: process.env.REACT_APP_ETHOS as any || ' '
   });
+
+
+  const sender = new HederaMessageSender(
+    process.env.REACT_APP_MY_ACCOUNT_ID!,
+    process.env.REACT_APP_MY_ETHOS!
+  );
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

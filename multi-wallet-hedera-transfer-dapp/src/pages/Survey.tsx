@@ -14,7 +14,9 @@ import { ethers } from 'ethers';
 import ResponseView from '../components/ResponseView';
 import SurveyFormRenderer from '../components/SurveyFormRenderer';
 import ResponseRenderer from '../components/ResponseRenderer';
-
+import { HederaMessageSender } from '../services/HederaMessageSender';
+import { v4 as uuidv4 } from 'uuid';
+import { encryptionService } from '../services/EncryptionService';
 
 interface Survey {
   id: string,
@@ -65,6 +67,13 @@ const SurveyPage = () => {
   const abi = SURVEYABI;
   const contractAddress = SURVEYMANAGERCONTRACT; // Make sure this is the EVM address
 
+
+
+    const sender = new HederaMessageSender(
+      process.env.REACT_APP_MY_ACCOUNT_ID!,
+      process.env.REACT_APP_MY_ETHOS!
+    );
+    
   console.log(accountId)
 
   const contract = new ethers.Contract(
@@ -178,6 +187,25 @@ const SurveyPage = () => {
         800000, // gas limit
       );
 
+
+        const message = {
+          eventType: "Approve Survey",
+          timestamp: new Date().toISOString(),
+          userId: accountId,
+          dataId: uuidv4(),
+          action: "call",
+          details: {
+              functionName: "approveResponse"
+          }
+      };
+  
+        await sender.sendMessage(
+          process.env.REACT_APP_SANDR_TOPIC_ID  as any, 
+          JSON.stringify(message)
+      );
+
+
+
       await fetchSurveysResponses();
     } catch (err) {
       console.error('Error approving response:', err);
@@ -213,6 +241,8 @@ const SurveyPage = () => {
       const ipfsHash = await uploadToIPFS(jsonFile);
 
       console.log(ipfsHash);
+
+      const encryptedLink = encryptionService.encrypt(ipfsHash!);
   
 
       const paramBuilder = new ContractFunctionParameterBuilder()
@@ -251,6 +281,23 @@ const SurveyPage = () => {
         800000, // gas limit
         contractData.rewardPerResponse * contractData.responsesNeeded
       );
+
+      const message = {
+        eventType: "New Survey",
+        timestamp: new Date().toISOString(),
+        userId: accountId,
+        dataId: uuidv4(),
+        action: "call",
+        details: {
+            ipfsencoded: encryptedLink
+        }
+    };
+
+      await sender.sendMessage(
+        process.env.REACT_APP_SANDR_TOPIC_ID  as any, 
+        JSON.stringify(message)
+    );
+
     
        console.log(contractData)
       // Display success message
@@ -302,6 +349,8 @@ const SurveyPage = () => {
     // Upload form data to IPFS first
     const ipfsHash = await uploadToIPFS(jsonFile);
     
+    const encryptedLink = encryptionService.encrypt(ipfsHash!);
+  
 
     const paramBuilder = new ContractFunctionParameterBuilder()
     .addParam({
@@ -323,6 +372,23 @@ const SurveyPage = () => {
       800000
     );
   
+
+
+    const message = {
+      eventType: "Survey response",
+      timestamp: new Date().toISOString(),
+      userId: accountId,
+      dataId: uuidv4(),
+      action: "call",
+      details: {
+          ipfsencoded: encryptedLink
+      }
+  };
+
+    await sender.sendMessage(
+      process.env.REACT_APP_SANDR_TOPIC_ID  as any, 
+      JSON.stringify(message)
+  );
 
     toast.success('Survey response created successfully!');
   } catch (error) {

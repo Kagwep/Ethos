@@ -9,6 +9,8 @@ import { ethers } from 'ethers';
 import { RequestAccessButton } from './RequestAccessButton';
 import { dappConnector } from '../services/wallets/walletconnect/walletConnectClient';
 import { encryptionService } from '../services/EncryptionService';
+import { HederaMessageSender } from '../services/HederaMessageSender';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DataSource {
   id: number;
@@ -58,6 +60,13 @@ const DataProvisionPage: React.FC = () => {
   const abi = DATAMANAGEMENTAbi;
   const contractAddress = DATAMANAGEMENTCONTRACT; // Make sure this is the EVM address
 
+
+  const sender = new HederaMessageSender(
+    process.env.REACT_APP_MY_ACCOUNT_ID!,
+    process.env.REACT_APP_MY_ETHOS!
+  );
+  
+  
   console.log(accountId)
 
   const contract = new ethers.Contract(
@@ -173,6 +182,23 @@ const handleDownload = async (id: number) => {
 
   if(!specificDataSource) return;
 
+        const message = {
+          eventType: "Download Data",
+          timestamp: new Date().toISOString(),
+          userId: accountId,
+          dataId: uuidv4(),
+          action: "call",
+          details: {
+              ipfsencoded: specificDataSource.storageLink
+          }
+      };
+
+      await sender.sendMessage(
+        process.env.REACT_APP_PROVISIONS_TOPIC_ID as any, 
+        JSON.stringify(message)
+    );
+
+
   try {
     const decryptedLink = encryptionService.decrypt(specificDataSource.storageLink);
     
@@ -185,6 +211,8 @@ const handleDownload = async (id: number) => {
       if (contentDisposition && contentDisposition.includes('filename=')) {
         filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
       }
+
+
   
       return response.blob().then(blob => ({ blob, filename }));
     })
@@ -227,6 +255,24 @@ const handleProcessRequest = async (requestId: number, approved: boolean) => {
       params,
       300000
     );
+
+    
+
+    const message = {
+      eventType: "Process request Data",
+      timestamp: new Date().toISOString(),
+      userId: accountId,
+      dataId: uuidv4(),
+      action: "call",
+      details: {
+          funationName: "processAccessRequest"
+      }
+  };
+
+  await sender.sendMessage(
+    process.env.REACT_APP_PROVISIONS_TOPIC_ID as any, 
+    JSON.stringify(message)
+);
 
     // Refresh the requests list
     await fetchAccessRequests();
