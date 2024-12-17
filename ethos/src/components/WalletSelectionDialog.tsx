@@ -39,7 +39,7 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
             />
             WalletConnect
           </button>
-          <button
+          {/* <button
             onClick={() => {
               connectToMetamask();
               setOpen(false);
@@ -49,7 +49,7 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
           >
             <img src={MetamaskLogo} alt="Metamask Logo" className="h-6" />
             Metamask
-          </button>
+          </button> */}
         </div>
         <button
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
