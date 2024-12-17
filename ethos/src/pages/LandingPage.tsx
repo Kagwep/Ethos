@@ -55,8 +55,8 @@ const ProcessStep: React.FC<ProcessStepProps> = ({ step, title, description }) =
 const FEATURE_DATA: FeatureProps[] = [
   {
     icon: Database,
-    title: "Data Provision",
-    description: "Securely upload and manage your raw data with Hedera's decentralized storage solutions."
+    title: "Secure Data Provision",
+    description: "Upload and manage your data with IPFS storage, tracked securely on Hedera. Earn rewards by providing data or participating in surveys, research, and feedback."
   },
   {
     icon: Brain,
@@ -65,16 +65,17 @@ const FEATURE_DATA: FeatureProps[] = [
   },
   {
     icon: Shield,
-    title: "Verified Results",
-    description: "Ensure data integrity and traceability through Hedera's secure ledger."
+    title: "Verified Data Integrity",
+    description: "Hedera's decentralized ledger ensures data integrity, verifiability, and tamper-proof storage tracking, giving you trusted insights."
   }
+  
 ];
 
 const PROCESS_STEPS: StepData[] = [
-  { step: "1", title: "Connect Wallet", description: "Link your Hedera wallet to get started" },
-  { step: "2", title: "Upload Data", description: "Provide your raw data through our secure interface" },
-  { step: "3", title: "Process & Verify", description: "AI processes your data with verifiable results" },
-  { step: "4", title: "Access Insights", description: "View and export your verified insights" }
+  { step: "1", title: "Connect Wallet", description: "Link your Hedera wallet to get started." },
+  { step: "2", title: "Upload Data", description: "Provide your raw data through our secure interface." },
+  { step: "3", title: "Process & Verify", description: "AI processes your data with verifiable results." },
+  { step: "4", title: "Access Insights", description: "View, export, and monetize your verified insights." }
 ];
 
 const LandingPage: React.FC = () => {
@@ -94,10 +95,10 @@ const LandingPage: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent leading-tight">
-                Transform Data with AI on Hedera
+              ETHOS: Trusted Data, Intelligent Insights
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Secure, verifiable insights powered by AI and decentralized technology
+              Earn, secure, and transform data through AI-driven insights and decentralized tracking.
               </p>
               <button
                 onClick={handleGetStarted}

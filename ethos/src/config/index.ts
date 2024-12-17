@@ -58,7 +58,7 @@ const validateFile = async (
   // Check actual file content MIME type
   try {
     const fileBuffer = await file.arrayBuffer();
-    const fileHeader = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+    const fileHeader = await fileTypeFromBuffer(Buffer.from(fileBuffer) as any);
     
     // Some text files may not have identifiable headers
     if (fileHeader) {

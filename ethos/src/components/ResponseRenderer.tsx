@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
 import { FormResponse, FieldSubmission, FieldType } from '../config/types';
 import { ContractResponse } from '../config/types';
+import InsightsTrigger from './DataInsightsViewer';
 
 interface ResponseRendererProps {
   survey: {
@@ -261,6 +262,7 @@ const ResponseRenderer: React.FC<ResponseRendererProps> = ({
               </button>
             )}
             {response.isApproved && !response.isPaid && onPay && (
+
               <button
                 onClick={handlePay}
                 disabled={isProcessing}
@@ -273,6 +275,9 @@ const ResponseRenderer: React.FC<ResponseRendererProps> = ({
                 )}
               </button>
             )}
+            <InsightsTrigger ipfsHash={survey.ipfsHash}>
+                Analyze 
+            </InsightsTrigger>
           </div>
 
           {/* Form Submissions */}

@@ -44,6 +44,7 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
               connectToMetamask();
               setOpen(false);
             }}
+            disabled
             className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded transition"
           >
             <img src={MetamaskLogo} alt="Metamask Logo" className="h-6" />

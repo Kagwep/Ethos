@@ -14,6 +14,7 @@ import FeedbackResponsesView from '../components/FeedbackResponsesView';
 import { v4 as uuidv4 } from 'uuid';
 import { HederaMessageSender } from '../services/HederaMessageSender';
 import { encryptionService } from '../services/EncryptionService';
+import InsightsTrigger from '../components/DataInsightsViewer';
 
 interface Review {
   id: number;
@@ -175,7 +176,7 @@ const FeedBackPage = () => {
             ipfsHashEncoded: encryptedLink
         }
     };
-
+ console.log(process.env.REACT_APP_FEEDBACK_TOPIC_ID)
       await sender.sendMessage(
         process.env.REACT_APP_FEEDBACK_TOPIC_ID  as any, 
         JSON.stringify(message)
@@ -492,6 +493,9 @@ const FeedBackPage = () => {
               <button onClick={() => handleSubmitResponseView(feedback)} className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
                 <MessageCircle className="w-4 h-4" /> View Responses
               </button>
+              <InsightsTrigger ipfsHash={feedback.ipfsHash}>
+                  Analyze 
+              </InsightsTrigger>
               {feedback.active && (
                 <button 
                   className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100"
@@ -568,7 +572,10 @@ const FeedBackPage = () => {
             <div className="px-6 py-4 border-t flex justify-end gap-2">
               <button onClick={() => handleSubmitResponseView(feedback)} className="flex items-center gap-2 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
                   <MessageCircle className="w-4 h-4" /> View Responses
-                </button>
+              </button>
+              <InsightsTrigger ipfsHash={feedback.ipfsHash}>
+                  Analyze 
+              </InsightsTrigger>
               <button 
                 onClick={() => handleSubmitResponse(feedback)}
                 className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"

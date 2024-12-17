@@ -20,7 +20,7 @@ export class HederaMessageSender {
             const tId = AccountId.fromString(topicId);
             console.log(tId)
             const transaction = await new TopicMessageSubmitTransaction({
-                topicId: tId,
+                topicId: topicId,
                 message: message,
             }).execute(this.client);
 

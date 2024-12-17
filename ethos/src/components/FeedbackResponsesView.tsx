@@ -126,6 +126,7 @@ const FeedbackResponsesView: React.FC<FeedbackResponsesViewProps> = ({ review, o
         <h3 className="text-xl font-semibold text-gray-900">
           Responses ({review.responses.length})
         </h3>
+        
 
         {review.responses.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">

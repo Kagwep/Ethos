@@ -11,6 +11,7 @@ import { dappConnector } from '../services/wallets/walletconnect/walletConnectCl
 import { encryptionService } from '../services/EncryptionService';
 import { HederaMessageSender } from '../services/HederaMessageSender';
 import { v4 as uuidv4 } from 'uuid';
+import InsightsTrigger from './DataInsightsViewer';
 
 interface DataSource {
   id: number;
@@ -497,13 +498,19 @@ const handleProcessRequest = async (requestId: number, approved: boolean) => {
                             </div>
                           )}
                               {request.status === 'Approved' && (
-                                  <button
-                                    onClick={() => handleDownload(request.dataSourceId)}
-                                    className="flex items-center gap-2 px-3 py-1 bg-cyan-600 text-white rounded hover:bg-cyan-700"
-                                  >
-                                    <Download size={16} />
-                                    Download Data
-                                  </button>
+                                <div className="flex items-center gap-4">
+                                <InsightsTrigger ipfsHash={encryptionService.decrypt(getDataSourceById(request.dataSourceId)?.storageLink as any)}>
+                                  Analyze 
+                                </InsightsTrigger>
+                                <button
+                                  onClick={() => handleDownload(request.dataSourceId)}
+                                  className="flex items-center gap-2 px-3 py-1 bg-cyan-600 text-white rounded hover:bg-cyan-700"
+                                >
+                                  <Download size={16} />
+                                  Download Data
+                                </button>
+                              </div>
+
                                 )}
                         </div>
                       </div>
